@@ -26,14 +26,22 @@ public class ComposeActivity extends AppCompatActivity {
     public static final int MAX_TWEET_LENGTH = 140;
     TwitterClient client;
     public static final String TAG = "ComposeActivity";
+    String starter_string;
+    String tweet_id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compose);
         etCompose = findViewById(R.id.etCompose);
         btnTweet = findViewById(R.id.btnTweet);
         client = TwitterApp.getRestClient(this);
+        starter_string = (String) getIntent().getStringExtra("responding_to");
+        tweet_id = (String) getIntent().getStringExtra("tweet_id");
+        etCompose.setText(starter_string+"  ");
+
 
         //set click listner on button
         btnTweet.setOnClickListener(new View.OnClickListener() {
@@ -54,10 +62,10 @@ public class ComposeActivity extends AppCompatActivity {
                             Toast.LENGTH_LONG).show();
                     return;
                 }
-                client.publishTweet(tweetContent, new JsonHttpResponseHandler() {
+                client.publishTweet(tweetContent, tweet_id, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
-                        Log.i(TAG, "onSuccess to publish tweet");
+                        Log.i(TAG, "onSuccess to reply tweet");
                         try {
                             Tweet tweet = Tweet.fromJson(json.jsonObject);
                             Log.i(TAG, "Published tweet says : " + tweet.body);

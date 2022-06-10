@@ -3,6 +3,7 @@ package com.codepath.apps.restclienttemplate;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -14,9 +15,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import com.codepath.apps.restclienttemplate.adapters.TweetsAdapter;
+import com.codepath.apps.restclienttemplate.fragments.ComposeFragment;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
@@ -31,7 +33,7 @@ import okhttp3.Headers;
 
 public class TimelineActivity extends AppCompatActivity {
     public static final String TAG = "TimelineActivity";
-    private final int REQUEST_CODE = 20;
+    public final int REQUEST_CODE = 20;
     private SwipeRefreshLayout swipeContainer;
     
     TwitterClient client;
@@ -39,6 +41,7 @@ public class TimelineActivity extends AppCompatActivity {
     List<Tweet> tweets;
     TweetsAdapter adapter;
     Button btnLogOut;
+    ProgressBar pb;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -51,9 +54,8 @@ public class TimelineActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.compose){
             //compose action has been selected
-            //navigate to the compose activity
-            Intent intent = new Intent(this, ComposeActivity.class);
-            startActivityForResult(intent, REQUEST_CODE);
+
+            showComposeFragment("");
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -80,7 +82,8 @@ public class TimelineActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
-
+        // on some click or some loading we need to wait for...
+        pb = (ProgressBar) findViewById(R.id.pbLoading);
         // Lookup the swipe container view
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
@@ -90,6 +93,7 @@ public class TimelineActivity extends AppCompatActivity {
                 // Your code to refresh the list here.
                 // Make sure you call swipeContainer.setRefreshing(false)
                 // once the network request has completed successfully.
+                showProgressBar();
                 fetchTimelineAsync(0);
             }
         });
@@ -112,6 +116,7 @@ public class TimelineActivity extends AppCompatActivity {
         rvTweets.setLayoutManager(new LinearLayoutManager(this));
         rvTweets.setAdapter(adapter);
 
+        showProgressBar();
         populateHomeTimeline();
 
         btnLogOut = findViewById(R.id.btnLogOut);
@@ -121,6 +126,8 @@ public class TimelineActivity extends AppCompatActivity {
                 onLogoutButton();
             }
         });
+
+
     }
 
     void onLogoutButton() {
@@ -141,6 +148,7 @@ public class TimelineActivity extends AppCompatActivity {
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
+                hideProgressBar();
                 Log.i(TAG, "onSuccess" + json.toString());
                 JSONArray jsonArray = json.jsonArray;
                 try {
@@ -158,16 +166,27 @@ public class TimelineActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                hideProgressBar();
                 Log.d("DEBUG", "Fetch timeline error: " + throwable.toString());
                 swipeContainer.setRefreshing(false);
             }
         });
     }
 
+    public void showProgressBar() {
+        pb.setVisibility(ProgressBar.VISIBLE);
+    }
+
+    public void hideProgressBar() {
+        // Hide progress item
+        pb.setVisibility(ProgressBar.INVISIBLE);
+    }
+
     private void populateHomeTimeline() {
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
+                hideProgressBar();
                 Log.i(TAG, "onSuccess" + json.toString());
                 JSONArray jsonArray = json.jsonArray;
                 try {
@@ -181,8 +200,14 @@ public class TimelineActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                hideProgressBar();
                 Log.i(TAG, "onFailure" + response, throwable);
             }
         });
+    }
+    public void showComposeFragment(String responding_to) {
+        FragmentManager fm = getSupportFragmentManager();
+        ComposeFragment composeFragment = ComposeFragment.newInstance(responding_to);
+        composeFragment.show(fm, "ComposeFragment");
     }
 }

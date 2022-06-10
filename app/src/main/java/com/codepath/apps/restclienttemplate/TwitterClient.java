@@ -53,13 +53,38 @@ public class TwitterClient extends OAuthBaseClient {
 		client.get(apiUrl, params, handler);
 	}
 
-	public void publishTweet(String tweetContent, JsonHttpResponseHandler handler) {
+	public void publishTweet(String tweetContent, String tweetID, JsonHttpResponseHandler handler) {
 		String apiUrl = getApiUrl("statuses/update.json");
 		// Can specify query string params directly or through RequestParams.
 		RequestParams params = new RequestParams();
 		params.put("status", tweetContent);
+		if(!tweetID.equals(" ")){
+			params.put("in_reply_to_status_id", tweetID);
+			params.put("auto_populate_reply_metadata", true);
+		}
+
 		client.post(apiUrl, params, "",handler);
 	}
+
+	public void replyTweet(String tweetContent, String tweetID, JsonHttpResponseHandler handler) {
+		String apiUrl = getApiUrl("statuses/update.json");
+		// Can specify query string params directly or through RequestParams.
+		RequestParams params = new RequestParams();
+		params.put("status", tweetContent);
+		params.put("in_reply_to_status_id", tweetID);
+		params.put("auto_populate_reply_metadata", true);
+		client.post(apiUrl, params, "",handler);
+	}
+
+	public void retweet(String tweetID, JsonHttpResponseHandler handler) {
+		String apiUrl = getApiUrl(String.format("statuses/retweet"+ tweetID+".json"));
+		// Can specify query string params directly or through RequestParams.
+		RequestParams params = new RequestParams();
+		params.put("id", tweetID);
+		client.post(apiUrl, params, "",handler);
+	}
+
+
 
 	/* 1. Define the endpoint URL with getApiUrl and pass a relative path to the endpoint
 	 * 	  i.e getApiUrl("statuses/home_timeline.json");

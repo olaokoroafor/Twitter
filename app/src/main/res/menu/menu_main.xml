@@ -3,8 +3,22 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/miActionProgress"
+        android:title="Loading..."
+        android:visible="false"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        app:actionLayout="@layout/action_progress_view"
+        />
+    <item
+        android:id="@+id/logo"
+        android:icon="@drawable/ic_launcher_twitter"
+        android:title="logo"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/compose"
-        android:icon="@android:drawable/ic_menu_edit"
+        android:icon="@drawable/vector_compose_fab"
         android:title="compose"
         app:showAsAction="always" />
 </menu>
