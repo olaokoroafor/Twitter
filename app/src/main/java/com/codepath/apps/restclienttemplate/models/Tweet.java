@@ -2,6 +2,8 @@ package com.codepath.apps.restclienttemplate.models;
 
 import android.util.Log;
 
+import com.codepath.apps.restclienttemplate.TimelineActivity;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +19,7 @@ import java.util.Locale;
 public class Tweet {
 
     public String id;
+    public long id_long;
     public String body;
     public String createdAt;
     public User user;
@@ -43,6 +46,7 @@ public class Tweet {
             return null;
         Tweet tweet = new Tweet();
         tweet.id = jsonObject.getString("id_str");
+        tweet.id_long = jsonObject.getLong("id");
         if(jsonObject.has("full_text")) {
             tweet.body = jsonObject.getString("full_text");
         } else {
@@ -79,9 +83,9 @@ public class Tweet {
         for(int i = 0; i < jsonArray.length(); i++){
             Tweet tweet = fromJson(jsonArray.getJSONObject(i));
             if (tweet != null){
+
                 tweets.add(fromJson(jsonArray.getJSONObject(i)));
             }
-
         }
         return tweets;
 
