@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.codepath.apps.restclienttemplate.ComposeActivity;
 import com.codepath.apps.restclienttemplate.R;
 import com.codepath.apps.restclienttemplate.TimelineActivity;
+import com.codepath.apps.restclienttemplate.TweetDetailActivity;
 import com.codepath.apps.restclienttemplate.TwitterApp;
 import com.codepath.apps.restclienttemplate.TwitterClient;
 import com.codepath.apps.restclienttemplate.fragments.ComposeFragment;
@@ -38,6 +39,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.parceler.Parcels;
 import org.w3c.dom.Text;
 
 import java.util.List;
@@ -160,6 +162,17 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             tvDisplayDate.setText(tweet.displayTime);
             tvRetweetCount.setText(tweet.retweetCount.toString());
             tvLikeCount.setText(tweet.favoriteCount.toString());
+            tvBody.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //GO TO DETAIL SCREEN
+                    Intent intent = new Intent(context, TweetDetailActivity.class);
+                    // serialize the movie using parceler, use its short name as a key
+                    intent.putExtra(Tweet.class.getSimpleName(), Parcels.wrap(tweet));
+                    // show the activity
+                    context.startActivity(intent);
+                }
+            });
             ivReply.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -181,6 +194,12 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                             @Override
                             public void onSuccess(int statusCode, Headers headers, JSON json) {
                                 Log.i("TweetsAdapter", "This should've retweeted, go check");
+                                Glide.with(context)
+                                        .load(R.drawable.ic_vector_retweet)
+                                        .into(ivRetweet);
+                                int old_count = new Integer((String) tvRetweetCount.getText());
+                                tvRetweetCount.setText(new Integer(old_count+1).toString());
+                                tweet.retweeted = true;
                             }
 
                             @Override
@@ -188,20 +207,25 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                                 Log.e("TweetsAdapter", throwable.toString());
                             }
                         });
-                        Glide.with(context)
-                                .load(R.drawable.ic_vector_retweet)
-                                .into(ivRetweet);
-                        int old_count = new Integer((String) tvRetweetCount.getText());
-                        tvRetweetCount.setText(new Integer(old_count+1).toString());
-                        tweet.retweeted = true;
                     }
                     else{
-                        Glide.with(context)
-                                .load(R.drawable.ic_vector_retweet_stroke)
-                                .into(ivRetweet);
-                        int old_count = new Integer((String) tvRetweetCount.getText());
-                        tvRetweetCount.setText(new Integer(old_count-1).toString());
-                        tweet.retweeted=false;
+                        TwitterApp.getRestClient(context).unretweet(tweet.id, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                                Log.i("TweetsAdapter", "This should've unretweeted, go check");
+                                Glide.with(context)
+                                        .load(R.drawable.ic_vector_retweet_stroke)
+                                        .into(ivRetweet);
+                                int old_count = new Integer((String) tvRetweetCount.getText());
+                                tvRetweetCount.setText(new Integer(old_count-1).toString());
+                                tweet.retweeted=false;
+                            }
+
+                            @Override
+                            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                                Log.e("TweetsAdapter", throwable.toString());
+                            }
+                        });
                     }
                 }
             });
@@ -209,20 +233,43 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 @Override
                 public void onClick(View v) {
                     if (!tweet.favorited){
-                        Glide.with(context)
-                                .load(R.drawable.ic_vector_heart)
-                                .into(ivLikeTweet);
-                        int old_count = new Integer((String) tvLikeCount.getText());
-                        tvLikeCount.setText(new Integer(old_count+1).toString());
-                        tweet.favorited = true;
+                        TwitterApp.getRestClient(context).favorite(tweet.id, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                                Log.i("TweetsAdapter", "This should've liked, go check");
+                                Glide.with(context)
+                                        .load(R.drawable.ic_vector_heart)
+                                        .into(ivLikeTweet);
+                                int old_count = new Integer((String) tvLikeCount.getText());
+                                tvLikeCount.setText(new Integer(old_count+1).toString());
+                                tweet.favorited = true;
+                            }
+
+                            @Override
+                            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                                Log.e("TweetsAdapter", "that didnt work" + throwable);
+                            }
+                        });
                     }
+
                     else{
-                        Glide.with(context)
-                                .load(R.drawable.ic_vector_heart_stroke)
-                                .into(ivLikeTweet);
-                        int old_count = new Integer((String) tvLikeCount.getText());
-                        tvLikeCount.setText(new Integer(old_count-1).toString());
-                        tweet.favorited=false;
+                        TwitterApp.getRestClient(context).unfavorite(tweet.id, new JsonHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                                Log.i("TweetsAdapter", "This should've unliked, go check");
+                                Glide.with(context)
+                                        .load(R.drawable.ic_vector_heart_stroke)
+                                        .into(ivLikeTweet);
+                                int old_count = new Integer((String) tvLikeCount.getText());
+                                tvLikeCount.setText(new Integer(old_count-1).toString());
+                                tweet.favorited=false;
+                            }
+
+                            @Override
+                            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                                Log.e("TweetsAdapter", "that didnt work" + throwable);
+                            }
+                        });
                     }
                 }
             });

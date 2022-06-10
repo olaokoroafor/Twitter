@@ -38,6 +38,9 @@ public class Tweet {
     public Tweet(){}
 
     public static Tweet fromJson(JSONObject jsonObject) throws JSONException {
+
+        if (jsonObject.has("retweeted_status"))
+            return null;
         Tweet tweet = new Tweet();
         tweet.id = jsonObject.getString("id_str");
         if(jsonObject.has("full_text")) {
@@ -74,7 +77,10 @@ public class Tweet {
     public static List<Tweet> fromJsonArray(JSONArray jsonArray) throws JSONException {
         List<Tweet> tweets = new ArrayList<>();
         for(int i = 0; i < jsonArray.length(); i++){
-            tweets.add(fromJson(jsonArray.getJSONObject(i)));
+            Tweet tweet = fromJson(jsonArray.getJSONObject(i));
+            if (tweet != null){
+                tweets.add(fromJson(jsonArray.getJSONObject(i)));
+            }
 
         }
         return tweets;
