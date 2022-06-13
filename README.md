@@ -43,7 +43,7 @@ The following **optional** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
-<img src='twitter_walk_through.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='twitter_walk_through2.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 ## Notes
 
