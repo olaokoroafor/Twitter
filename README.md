@@ -46,8 +46,7 @@ Here's a walkthrough of implemented user stories:
 <img src='twitter_walk_through2.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 ## Notes
-
-Describe any challenges encountered while building the app.
+ - Figuring out which twitter endpioints to use
 
 ## Open-source libraries used
 
